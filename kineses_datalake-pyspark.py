@@ -6,9 +6,9 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "data_schema = spark.read.format('json').load('s3//s3-datalake-raw-teste/order-created').schema \n",
+    "data_schema = spark.read.format('json').load('s3//s3-datalake').schema \n",
     "\n",
-    "df = spark.readStream.format('json').schema(data_schema).load('s3//s3-datalake-raw-teste/order-created')"
+    "df = spark.readStream.format('json').schema(data_schema).load('s3//s3-datalake')"
    ]
   },
   {
@@ -21,7 +21,7 @@
     "\n",
     "df = df.withColumn('created_date',  F.to_date(F.col('created_at')))\n",
     "\n",
-    "df.writeStream.partitionBy('created_date').format('parquet').option(\"checkpointLocation\", 'dbfs:/order-created-staged-checkpoint').start('s3://s3-datalake-stage-teste/order-created')"
+    "df.writeStream.partitionBy('created_date').format('parquet').option(\"checkpointLocation\", 'dbfs:/order-created-staged-checkpoint').start('s3://s3-datalake-stage')"
    ]
   },
   {
@@ -36,7 +36,7 @@
     "agregated_df = agregated_df.withColumnRenamed('sum(quantity)', 'total_quantity')\n",
     "\n",
     "def _overwrite_partition(microbatch, epoch_id):\n",
-    "    microbatch.write.partitionBy('created_date').mode('overwrite').format('parquet').save(\"s3://s3-datalake-curated-testeInfo/order-created\")\n",
+    "    microbatch.write.partitionBy('created_date').mode('overwrite').format('parquet').save(\"s3://s3\")\n",
     "\n",
     "agregated_df.writeStream.ouputMode('update').option('checkpointLocation', 'dbfs:/order-created-curated-checkpoint').foreachBeatch(_overwrite_partition).start()"
    ]
@@ -47,7 +47,7 @@
    "metadata": {},
    "outputs": [],
    "source": [
-    "display(spark.read.format('parquet').load('s3://s3-datalake-curated-teste/order-created'))"
+    "display(spark.read.format('parquet').load('s3://s3-datalake-d'))"
    ]
   }
  ],
